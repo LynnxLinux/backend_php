@@ -1,0 +1,78 @@
+METODOS UTILIZADOS NO PROCESSO DE EDICAO - ENTIDADE CLIENTE
+Dupla: Nome do integrante 1 / Nome do integrante 2
+
+Fluxo: lista (consultar.php) -> editar.php -> ClienteController -> ClienteDAO -> banco
+
+====================================================
+1) MODEL  (model/Cliente.php)
+====================================================
+Classe Cliente: representa um cliente (atributos privados id, nome, email, telefone).
+
+- getId(): ?int                     retorna o id (pode ser nulo)
+- setId(?int $id): self             define o id; nulo = cliente novo, com valor = cliente existente
+- getNome(): string                 retorna o nome
+- setNome(string $nome): self       define o nome (aplica trim)
+- getEmail(): string                retorna o e-mail
+- setEmail(string $email): self     define o e-mail (aplica trim)
+- getTelefone(): string             retorna o telefone
+- setTelefone(string $telefone): self  define o telefone (aplica trim)
+
+====================================================
+2) DAO  (dao/ClienteDAO.php)
+====================================================
+Acesso ao banco com PDO e prepared statements.
+
+- __construct()                     abre a conexao (new Conn())
+- texto(string): string  [privado]  trim + mb_strtoupper, padroniza o nome em maiusculas
+- listar(): array                   SELECT * FROM cliente ORDER BY nome; devolve array associativo
+- buscarPorId(int $id): ?Cliente    SELECT ... WHERE id=?; devolve um objeto Cliente preenchido
+                                    ou null se nao existir. Alimenta o formulario de edicao.
+- salvar(Cliente $cliente): bool    se getId() == null executa INSERT; senao executa
+                                    UPDATE cliente SET nome=?, email=?, telefone=? WHERE id=?
+                                    (este e o metodo que grava a edicao no banco)
+- excluir(int $id): bool            DELETE FROM cliente WHERE id=?
+
+Metodos PDO usados: prepare(), bindValue(), execute(), query(), fetch(), fetchAll().
+
+====================================================
+3) CONTROLLER  (controller/ClienteController.php)
+====================================================
+Intermedia as views e o DAO.
+
+- __construct()                     instancia o ClienteDAO
+- montar(): Cliente  [privado]      le txtnome, txtemail e txttelefone do POST com filter_input()
+                                    e monta o objeto Cliente
+- salvar(): bool                    cadastro: monta o objeto (sem id) e chama dao->salvar()
+- alterar(): bool                   EDICAO: le txtid (FILTER_VALIDATE_INT), se invalido retorna false;
+                                    monta o objeto, faz setId($id) e chama dao->salvar()
+- listar(): array                   chama dao->listar()
+- buscarPorId(int $id): ?Cliente    chama dao->buscarPorId()
+- excluir(int $id): bool            chama dao->excluir()
+
+====================================================
+4) VIEWS  (views/cliente/)
+====================================================
+- consultar.php    lista os clientes em tabela; cada linha tem o botao Editar
+                   (link ?p=editar/cliente&id=ID) e o botao Excluir
+- salvar.php       formulario de cadastro; ao enviar (btnsalvar) chama controller->salvar()
+- editar.php       1) filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) recebe o id
+                   2) controller->buscarPorId($id) busca o registro
+                   3) formulario vem preenchido, com <input type="hidden" name="txtid">
+                   4) ao enviar (btnalterar) chama controller->alterar()
+                   5) mostra mensagem de sucesso/erro e volta para a lista
+- excluir.php      recebe o id pela URL e chama controller->excluir()
+
+Funcoes auxiliares do PHP: filter_input(), isset($_POST), htmlspecialchars(), mb_strtoupper(),
+mb_strtolower(), trim(), require_once.
+
+====================================================
+5) ROTAS E MENU
+====================================================
+- views/rotas.php   lista branca ($paginasPermitidas): clientes, add/cliente, editar/cliente, excluir/cliente
+- views/index.php   le ?p= com filter_input() e inclui a view correspondente
+- views/navbar.php  link "Consultar Clientes" (?p=clientes)
+
+====================================================
+6) BANCO (database/script.sql)
+====================================================
+cliente (id INT PK AUTO_INCREMENT, nome VARCHAR(100), email VARCHAR(100), telefone VARCHAR(20))
