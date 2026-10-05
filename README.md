@@ -6,6 +6,7 @@ Atividade: implementar a funcionalidade de **editar registros** para as entidade
 ## Integrante
 
 - Guilherme Duarte Nunes
+- Mirella Mugnato
 
 ## Funcionalidades
 
