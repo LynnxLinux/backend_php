@@ -3,10 +3,9 @@
 Projeto de Backend com PHP (MVC simplificado: Model, DAO, Controller e Views) com PDO/MySQL.
 Atividade: implementar a funcionalidade de **editar registros** para as entidades **Cliente** e **Fornecedor**.
 
-## Dupla
+## Integrante
 
-- Nome do integrante 1
-- Nome do integrante 2
+- Guilherme Duarte Nunes
 
 ## Funcionalidades
 
